@@ -1,0 +1,41 @@
+% Slide 03: Our Company
+\begin{frame}{Our Company}
+    \begin{columns}[c]
+        \begin{column}{0.6\textwidth}
+            \textbf{Company Overview}
+
+            \vspace{0.3cm}
+
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod, nisi vel consectetur consectetur, nisl nisi aliquam nisi, eu aliquam nisl nisi euismod nisi.
+
+            \vspace{0.5cm}
+
+            \begin{itemize}
+                \item \textbf{Founded:} 2023
+                \item \textbf{Headquarters:} San Francisco, CA
+                \item \textbf{Employees:} 25+ talented professionals
+                \item \textbf{Revenue:} \money{1.2M} (2025)
+                \item \textbf{Growth:} 150\% YoY
+            \end{itemize}
+        \end{column}
+
+        \begin{column}{0.35\textwidth}
+            \centering
+            \begin{tikzpicture}[scale=0.8]
+                % Timeline
+                \draw[->,thick] (0,0) -- (0,5);
+                \node[right] at (0.2,4.5) {\small \textbf{2026}};
+                \node[right] at (0.2,3.5) {Series A};
+                \node[right] at (0.2,2.5) {\small \textbf{2025}};
+                \node[right] at (0.2,1.5) {Seed Round};
+                \node[right] at (0.2,0.5) {\small \textbf{2023}};
+                \node[right] at (0.2,0) {Founded};
+
+                % Dots
+                \fill[blue!70!black] (0,4.5) circle (0.1);
+                \fill[blue!70!black] (0,2.5) circle (0.1);
+                \fill[blue!70!black] (0,0) circle (0.1);
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}

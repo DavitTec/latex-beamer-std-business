@@ -1,0 +1,44 @@
+% Slide 14: Financial Projections
+\begin{frame}{Financial Projections}
+    \framesubtitle{3-Year Forecast}
+
+    \begin{center}
+        \begin{tikzpicture}
+            \begin{axis}[
+                width=10cm,
+                height=5cm,
+                xlabel={Year},
+                ylabel={Amount (\$M)},
+                xmin=2026, xmax=2028,
+                ymin=0, ymax=12,
+                xtick={2026,2027,2028},
+                legend pos=north west,
+                ymajorgrids=true,
+                grid style=dashed,
+            ]
+            \addplot[color=blue,mark=square,thick] coordinates {
+                (2026,1.5)(2027,4.2)(2028,9.8)
+            };
+            \addplot[color=red,mark=triangle,thick] coordinates {
+                (2026,1.8)(2027,3.5)(2028,6.2)
+            };
+            \legend{Revenue,Expenses}
+            \end{axis}
+        \end{tikzpicture}
+    \end{center}
+
+    \vspace{0.3cm}
+
+    \begin{center}
+        \begin{tabular}{lccc}
+            \toprule
+            & \textbf{2026} & \textbf{2027} & \textbf{2028} \\
+            \midrule
+            Revenue & \$1.5M & \$4.2M & \$9.8M \\
+            Expenses & \$1.8M & \$3.5M & \$6.2M \\
+            EBITDA & -\$300K & \$700K & \$3.6M \\
+            Margin & -20\% & 17\% & 37\% \\
+            \bottomrule
+        \end{tabular}
+    \end{center}
+\end{frame}

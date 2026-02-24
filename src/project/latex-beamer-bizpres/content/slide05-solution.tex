@@ -1,0 +1,47 @@
+% Slide 05: Our Solution
+\begin{frame}{Our Solution}
+    \framesubtitle{A Revolutionary Approach}
+
+    \begin{center}
+        \begin{tikzpicture}
+            % Central solution box
+            \node[draw,fill=blue!20,rounded corners,minimum width=3cm,minimum height=1.5cm] (center) at (0,0) {\textbf{Our Platform}};
+
+            % Features around it
+            \node[draw,fill=green!20,rounded corners] (f1) at (-3,2) {Feature 1};
+            \node[draw,fill=green!20,rounded corners] (f2) at (3,2) {Feature 2};
+            \node[draw,fill=green!20,rounded corners] (f3) at (-3,-2) {Feature 3};
+            \node[draw,fill=green!20,rounded corners] (f4) at (3,-2) {Feature 4};
+
+            % Arrows
+            \draw[->,thick] (f1) -- (center);
+            \draw[->,thick] (f2) -- (center);
+            \draw[->,thick] (f3) -- (center);
+            \draw[->,thick] (f4) -- (center);
+        \end{tikzpicture}
+    \end{center}
+
+    \vspace{0.5cm}
+
+    \begin{columns}[t]
+        \begin{column}{0.45\textwidth}
+            \textbf{Key Features:}
+            \begin{enumerate}
+                \item Advanced analytics dashboard
+                \item Real-time monitoring
+                \item AI-powered insights
+                \item Seamless integration
+            \end{enumerate}
+        \end{column}
+
+        \begin{column}{0.45\textwidth}
+            \textbf{Benefits:}
+            \begin{enumerate}
+                \item 40\% cost reduction
+                \item 3x faster implementation
+                \item 99.9\% uptime guarantee
+                \item 24/7 customer support
+            \end{enumerate}
+        \end{column}
+    \end{columns}
+\end{frame}

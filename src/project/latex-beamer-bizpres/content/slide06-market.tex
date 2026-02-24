@@ -1,0 +1,44 @@
+% Slide 06: Market Size & Opportunity
+\begin{frame}{Market Size \& Opportunity}
+    \begin{columns}[c]
+        \begin{column}{0.5\textwidth}
+            \textbf{Total Addressable Market (TAM)}
+
+            \vspace{0.5cm}
+
+            \begin{tikzpicture}
+                \begin{axis}[
+                    ybar,
+                    bar width=15pt,
+                    width=6cm,
+                    height=5cm,
+                    ylabel={Market Size (\$B)},
+                    symbolic x coords={TAM,SAM,SOM},
+                    xtick=data,
+                    ymin=0,
+                    ymax=120,
+                    nodes near coords,
+                ]
+                \addplot coordinates {(TAM,100) (SAM,25) (SOM,5)};
+                \end{axis}
+            \end{tikzpicture}
+        \end{column}
+
+        \begin{column}{0.45\textwidth}
+            \begin{block}{Market Breakdown}
+                \begin{itemize}
+                    \item \textbf{TAM:} \money{100B}\\
+                    {\small Total Addressable Market}
+                    \item \textbf{SAM:} \money{25B}\\
+                    {\small Serviceable Available Market}
+                    \item \textbf{SOM:} \money{5B}\\
+                    {\small Serviceable Obtainable Market}
+                \end{itemize}
+            \end{block}
+
+            \vspace{0.3cm}
+
+            \textbf{CAGR:} \highlight{18.5\%} (2024-2030)
+        \end{column}
+    \end{columns}
+\end{frame}

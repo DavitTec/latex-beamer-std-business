@@ -1,0 +1,58 @@
+% Slide 07: Traction
+\begin{frame}{Traction \& Growth}
+    \begin{columns}[T]
+        \begin{column}{0.5\textwidth}
+            \begin{tikzpicture}
+                \begin{axis}[
+                    width=6cm,
+                    height=5cm,
+                    xlabel={Quarter},
+                    ylabel={Revenue (\$K)},
+                    xmin=1, xmax=8,
+                    ymin=0, ymax=600,
+                    xtick={1,2,3,4,5,6,7,8},
+                    xticklabels={Q1'24,Q2'24,Q3'24,Q4'24,Q1'25,Q2'25,Q3'25,Q4'25},
+                    x tick label style={rotate=45,anchor=east,font=\tiny},
+                    legend pos=north west,
+                    ymajorgrids=true,
+                    grid style=dashed,
+                ]
+                \addplot[
+                    color=blue,
+                    mark=square,
+                    thick
+                ]
+                coordinates {
+                    (1,50)(2,85)(3,140)(4,220)(5,320)(6,450)(7,520)(8,580)
+                };
+                \legend{Revenue Growth}
+                \end{axis}
+            \end{tikzpicture}
+        \end{column}
+
+        \begin{column}{0.45\textwidth}
+            \textbf{Key Metrics:}
+
+            \vspace{0.3cm}
+
+            \begin{tabular}{lr}
+                \toprule
+                \textbf{Metric} & \textbf{Value} \\
+                \midrule
+                Total Customers & 150+ \\
+                MRR & \$85K \\
+                ARR & \$1.02M \\
+                Churn Rate & 3\% \\
+                NPS Score & 72 \\
+                CAC & \$2,500 \\
+                LTV & \$45,000 \\
+                LTV:CAC Ratio & 18:1 \\
+                \bottomrule
+            \end{tabular}
+
+            \vspace{0.3cm}
+
+            \textcolor{green!60!black}{\textbf{↑ 150\% YoY Growth}}
+        \end{column}
+    \end{columns}
+\end{frame}
