@@ -1,16 +1,15 @@
 {
-  "name": "latex-letter-std-business",
-  "version": "0.1.0",
-  "description": "",
+  "name": "latex-beamer-std-business",
+  "version": "0.1.1",
+  "description": "A minimalist LaTeX template using beamer.cls for professional business presentations.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "generate-metadata": "node scripts/generate-metadata.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "DavitTec",
   "license": "MIT",
   "packageManager": "pnpm@10.13.1",
-  "dependencies": {
-  }
+  "dependencies": {}
 }
