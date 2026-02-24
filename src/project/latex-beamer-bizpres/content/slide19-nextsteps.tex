@@ -5,12 +5,12 @@
     \begin{center}
         \begin{tikzpicture}[
             box/.style={rectangle,draw,fill=blue!20,rounded corners,minimum width=3cm,minimum height=1.2cm,align=center},
-            node distance=1.5cm
+            node distance=2.5cm
         ]
             \node[box] (step1) {\textbf{Step 1}\\Due Diligence};
-            \node[box,right of=step1,node distance=4cm] (step2) {\textbf{Step 2}\\Term Sheet};
+            \node[box,right of=step1,node distance=5cm] (step2) {\textbf{Step 2}\\Term Sheet};
             \node[box,below of=step1] (step3) {\textbf{Step 3}\\Legal \& Closing};
-            \node[box,right of=step3,node distance=4cm] (step4) {\textbf{Step 4}\\Launch \& Scale};
+            \node[box,right of=step3,node distance=5cm] (step4) {\textbf{Step 4}\\Launch \& Scale};
 
             \draw[->,thick] (step1) -- (step2);
             \draw[->,thick] (step2) -- (step4);
@@ -22,7 +22,7 @@
     \vspace{0.5cm}
 
     \begin{columns}[t]
-        \begin{column}{0.48\textwidth}
+        \begin{column}{0.3\textwidth}
             \textbf{Immediate Actions:}
             \begin{enumerate}
                 \item Schedule follow-up meeting
@@ -33,7 +33,7 @@
             \end{enumerate}
         \end{column}
 
-        \begin{column}{0.48\textwidth}
+        \begin{column}{0.3\textwidth}
             \textbf{Timeline:}
             \begin{itemize}
                 \item \textbf{Week 1-2:} Due diligence
