@@ -1,6 +1,6 @@
 {
   "name": "latex-beamer-std-business",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "A minimalist LaTeX template using beamer.cls for professional business presentations.",
   "main": "index.js",
   "scripts": {
