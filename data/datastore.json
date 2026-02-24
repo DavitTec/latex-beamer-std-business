@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "sender": {
+      "name": "Dr. Joe Bloggs M.D.",
+      "firstname": "Joe",
+      "lastname": "Bloggs",
+      "title": "Dr.",
+      "suffix": "M.D.",
+      "address": "123 Sender Street\\City\\Postcode\\Mobile: +123 456 7890\\Tel: +123 987 6543\\Email: joe@example.com"
+    },
+    "recipient": {
+      "company": "Dept. of Social Services",
+      "name": "Ms. Jane Doe",
+      "firstname": "Jane",
+      "lastname": "Doe",
+      "title": "Ms.",
+      "titleshort": "Ms.",
+      "suffix": "",
+      "address": "456 Recipient Road\\Big Town"
+    },
+    "tone": "formal",
+    "subject": "Regarding Our Business Proposal",
+    "custom_date": "22 February 2026"
+  }
+]

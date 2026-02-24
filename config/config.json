@@ -1,0 +1,41 @@
+{
+  "version": "3.8.0",
+  "template_settings": {
+    "tone": "formal",
+    "use_letterhead": "yes",
+    "use_signature": "yes",
+    "multipage": "no",
+    "custom_date": "",
+    "subject": "Regarding Our Business Proposal"
+  },
+  "image_paths": {
+    "logo": "src/logo.png",
+    "signature": "src/signature.png",
+    "letterhead": "src/letterhead.png",
+    "no_letterhead": "src/noletterhead.png"
+  },
+  "data_mappings": {
+    "sender": {
+      "db_map": {
+        "name": "sender_fullname",
+        "firstname": "sender_firstname",
+        "lastname": "sender_lastname",
+        "title": "sender_title",
+        "suffix": "sender_suffix",
+        "address": "sender_address"
+      }
+    },
+    "recipient": {
+      "db_map": {
+        "company": "recipient_company",
+        "name": "recipient_fullname",
+        "firstname": "recipient_firstname",
+        "lastname": "recipient_lastname",
+        "title": "recipient_title",
+        "titleshort": "recipient_titleshort",
+        "suffix": "recipient_suffix",
+        "address": "recipient_address"
+      }
+    }
+  }
+}
