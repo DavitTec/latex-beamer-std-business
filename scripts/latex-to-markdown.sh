@@ -1,8 +1,8 @@
 #!/bin/bash
 # scripts/latex-to-markdown.sh
-# Version: 2.0.2
+# Version: 2.0.3
 # Description: Converts LaTeX Beamer presentation slides to Markdown using Pandoc.
-#              Fixed printf octal bug on slide08+ (08 treated as octal). Now uses direct string construction.
+#              Fixed ugly ::::::::: frame/columns divs + style junk. Now produces clean Markdown.
 # Usage: pnpm run tex2md
 
 set -e
@@ -76,7 +76,6 @@ get_total_slides() {
 
 # ==================================================================
 # Function 2: Extract slide number and $slideTitle from filename
-# e.g. slide08-product-overview.tex → 08:product-overview
 # ==================================================================
 extract_slide_info() {
   local slide_file="${1}"
@@ -96,7 +95,7 @@ extract_slide_info() {
 }
 
 # ==================================================================
-# Helper: Return sorted list "num:title:file" (handles any 1-99 order)
+# Helper: Return sorted list "num:title:file"
 # ==================================================================
 get_sorted_slide_list() {
   local temp_list=()
@@ -195,18 +194,21 @@ while IFS= read -r line; do
     slide_count=$((slide_count + 1))
     IFS=: read -r slide_num slide_title slide_file <<< "${line}"
 
-    # Output filename (already zero-padded string, no printf needed)
+    # Output filename
     output_file="${MARKDOWN_DIR}/slide${slide_num}.md"
 
     if pandoc \
-      --from latex \
+      --from beamer \
       --to markdown \
       --standalone \
       --output "${output_file}" \
       "${slide_file}" 2>/dev/null; then
 
-      # Clean Pandoc output
+      # === STRONG CLEANUP – removes all ::::::::: divs, style junk, column width artifacts ===
       sed -i.bak '
+        /^:\{3,\}/d
+        /^[0-9.]\+ \[\]\{style=/d
+        s/\{style="[^"]*"\}//g
         /^\\begin{frame}/d
         /^\\end{frame}/d
         /^\\framesubtitle/d
@@ -238,12 +240,12 @@ echo "Successfully converted: ${successful}"
 echo "Output directory: ${MARKDOWN_DIR}"
 echo ""
 
-# Create index (uses slideTitle from filename)
+# Create index
 INDEX_FILE="${MARKDOWN_DIR}/_index.md"
 create_slide_index "${INDEX_FILE}"
 echo -e "${GREEN}✓ Created index file: ${INDEX_FILE}${NC}"
 
-# Create metadata JSON (now safe inside function)
+# Create metadata JSON
 METADATA_FILE="${MARKDOWN_DIR}/_metadata.json"
 create_metadata_json "${METADATA_FILE}"
 echo -e "${GREEN}✓ Created metadata file: ${METADATA_FILE}${NC}"
@@ -255,7 +257,7 @@ echo ""
 echo -e "${GREEN}✓ Conversion complete!${NC}"
 echo ""
 echo "Next steps:"
-echo "1. Review markdown files in: ${MARKDOWN_DIR}"
-echo "2. Run: pnpm run your-next-script"
-echo "3. Open in VS Code Insiders on Linux Mint Mate"
+echo "1. Open slide20.md in VS Code Insiders – it should now be clean!"
+echo "2. Run your next script"
+echo "3. Done on Linux Mint Mate"
 echo ""
