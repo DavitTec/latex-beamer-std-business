@@ -8,6 +8,7 @@
     "lint": "eslint ./src",
     "test": "echo \"Error: no test specified\" && exit 1",
     "compile": "pnpm exec ./scripts/compile-latex-prj.sh",
+    "tex2md": "pnpm exec ./scripts/latex-to-markdown.sh",
     "generate-metadata": "node scripts/generate-metadata.js",
     "dev": "vite",
     "build": "vite build",
