@@ -3,6 +3,8 @@
 
 \usepackage[size=a4,orientation=landscape,scale=3]{beamerposter}
 
+
+
 % Theme and Color Settings
 \usetheme{Madrid}
 \usecolortheme{default}
@@ -25,6 +27,9 @@
 \usepackage{fontawesome5}
 \usepackage{hyperref}
 
+% Define path to content and metadata
+\newcommand*{\MyPath}{/opt/davit/development/latex-beamer-std-business/src/latex/latex-beamer-bizpres}%
+
 % Custom Commands
 \newcommand{\highlight}[1]{\textcolor{blue!70!black}{\textbf{#1}}}
 \newcommand{\money}[1]{\textcolor{green!60!black}{\textbf{\$#1}}}
@@ -36,72 +41,72 @@
 \setbeamertemplate{footline}[frame number]
 
 % Include metadata
-\input{metadata.tex}
+\input{\MyPath/metadata.tex}
 
 % Document
 \begin{document}
 
 % Title Slide
-\input{content/slide01-title.tex}
+\input{\MyPath/content/slide01-title.tex}
 
 % Introduction
-\input{content/slide02-introduction.tex}
+\input{\MyPath/content/slide02-introduction.tex}
 
 % Our Company
-\input{content/slide03-company.tex}
+\input{\MyPath/content/slide03-company.tex}
 
 % The Challenge
-\input{content/slide04-problem.tex}
+\input{\MyPath/content/slide04-problem.tex}
 
 % Our Solution
-\input{content/slide05-solution.tex}
+\input{\MyPath/content/slide05-solution.tex}
 
 % Market Size & Opportunity
-\input{content/slide06-market.tex}
+\input{\MyPath/content/slide06-market.tex}
 
 % Traction
-\input{content/slide07-traction.tex}
+\input{\MyPath/content/slide07-traction.tex}
 
 % Product/Service Overview
-\input{content/slide08-product.tex}
+\input{\MyPath/content/slide08-product.tex}
 
 % Project Timeline
-\input{content/slide09-timeline.tex}
+\input{\MyPath/content/slide09-timeline.tex}
 
 % Implementation Strategy
-\input{content/slide10-implementation.tex}
+\input{\MyPath/content/slide10-implementation.tex}
 
 % Benefits
-\input{content/slide11-benefits.tex}
+\input{\MyPath/content/slide11-benefits.tex}
 
 % Impact Thesis & KPIs
-\input{content/slide12-impact.tex}
+\input{\MyPath/content/slide12-impact.tex}
 
 % Capital Needs & Use of Funds
-\input{content/slide13-capital.tex}
+\input{\MyPath/content/slide13-capital.tex}
 
 % Financial Projections
-\input{content/slide14-financials.tex}
+\input{\MyPath/content/slide14-financials.tex}
 
 % Team & Roles
-\input{content/slide15-team.tex}
+\input{\MyPath/content/slide15-team.tex}
 
 % Advisory Board
-\input{content/slide16-advisors.tex}
+\input{\MyPath/content/slide16-advisors.tex}
 
 % Competitive Advantage
-\input{content/slide17-competitive.tex}
+\input{\MyPath/content/slide17-competitive.tex}
 
 % Risk & Mitigation
-\input{content/slide18-risks.tex}
+\input{\MyPath/content/slide18-risks.tex}
 
 % Next Steps
-\input{content/slide19-nextsteps.tex}
+\input{\MyPath/content/slide19-nextsteps.tex}
 
 % Call to Action
-\input{content/slide20-cta.tex}
+\input{\MyPath/content/slide20-cta.tex}
 
 % Contact Information
-\input{content/slide21-contact.tex}
+\input{\MyPath/content/slide21-contact.tex}
 
 \end{document}
