@@ -1,9 +1,12 @@
 % Main LaTeX Beamer Business Plan Presentation
 \documentclass[12pt]{beamer}
-
 \usepackage[size=a4,orientation=landscape,scale=3]{beamerposter}
 
-
+% Font Size Adjustments
+\setbeamerfont{title}{size=\Large}
+\setbeamerfont{subtitle}{size=\large}
+\setbeamerfont{frametitle}{size=\large}
+\setbeamerfont{normal text}{size=\small}
 
 % Theme and Color Settings
 \usetheme{Madrid}
@@ -29,6 +32,8 @@
 
 % Define path to content and metadata
 \newcommand*{\MyPath}{/opt/davit/development/latex-beamer-std-business/src/latex/latex-beamer-bizpres}%
+\newcommand*{\MyAssetsPath}{/opt/davit/development/latex-beamer-std-business/assets}%
+\newcommand*{\companylogo}{\MyAssetsPath/logo.png}
 
 % Custom Commands
 \newcommand{\highlight}[1]{\textcolor{blue!70!black}{\textbf{#1}}}
@@ -37,11 +42,28 @@
 % Remove navigation symbols
 \setbeamertemplate{navigation symbols}{}
 
-% Footer with page numbers
-\setbeamertemplate{footline}[frame number]
-
 % Include metadata
 \input{\MyPath/metadata.tex}
+
+% % Footer with page numbers
+% \setbeamertemplate{footline}[frame number]
+
+% Custom Footer with Logo & Company Name
+\setbeamertemplate{footline}{
+  \hbox{%
+    \begin{beamercolorbox}[wd=1\paperwidth,ht=0.5cm,dp=0.25cm]{palette primary}
+      \hspace{0.3cm}
+      \includegraphics[height=1em]{\MyAssetsPath/logo-white.png}%
+      \hspace{0.3cm}
+      \textcolor{white}{\small\companyname}%
+      \hfill%
+      \insertframenumber/\inserttotalframenumber%
+      \hspace{0.3cm}
+    \end{beamercolorbox}%
+  }
+}
+
+
 
 % Document
 \begin{document}

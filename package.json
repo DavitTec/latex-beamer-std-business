@@ -1,12 +1,13 @@
 {
   "name": "latex-beamer-std-business",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": true,
   "description": "A minimalist LaTeX template using beamer.cls for professional business presentations.",
   "type": "module",
   "scripts": {
     "lint": "eslint ./src",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "pnpm exec ./scripts/compile-latex-prj.sh",
     "generate-metadata": "node scripts/generate-metadata.js",
     "dev": "vite",
     "build": "vite build",
