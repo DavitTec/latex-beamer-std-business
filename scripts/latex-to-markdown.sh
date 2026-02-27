@@ -1,11 +1,9 @@
 #!/bin/bash
 # scripts/latex-to-markdown.sh
-# Version: 1.0
-# Description: Converts LaTeX Beamer presentation slides to Markdown 
-#              format using Pandoc. This script processes each slide,
-#              extracts content, and generates clean Markdown files for 
-#              use in the static site generator.
-# Usage: ./scripts/latex-to-markdown.sh
+# Version: 2.0.1
+# Description: Converts LaTeX Beamer presentation slides to Markdown using Pandoc.
+#              Now fully modular with functions. Fixed "local" declarations (must be inside functions).
+# Usage: pnpm run tex2md
 
 set -e
 
@@ -34,184 +32,230 @@ TEMP_DIR="${CONTENT_DIR}/.temp"
 
 LATEX_DIR="${LATEX_DIR}/${PROJECT_TITLE}"
 
-# Colors for output
+# Colours for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
+NC='\033[0m'
 
 echo -e "${YELLOW}LaTeX Beamer to Markdown Conversion${NC}"
 echo "========================================"
 
-# Check if LaTeX directory exists
-if [ ! -d "$LATEX_DIR" ]; then
-    echo -e "${RED}Error: LaTeX directory '$LATEX_DIR' not found${NC}"
-    exit 1
+# Check directories and tools
+if [ ! -d "${LATEX_DIR}" ]; then
+  echo -e "${RED}Error: LaTeX directory '${LATEX_DIR}' not found${NC}"
+  exit 1
 fi
 
-# Check if Pandoc is installed
 if ! command -v pandoc &> /dev/null; then
-    echo -e "${RED}Error: Pandoc is not installed${NC}"
-    echo "Install Pandoc from: https://pandoc.org/installing.html"
-    exit 1
+  echo -e "${RED}Error: Pandoc is not installed${NC}"
+  echo "Install Pandoc from: https://pandoc.org/installing.html"
+  exit 1
 fi
 
 echo -e "${GREEN}✓ Pandoc found: $(pandoc --version | head -1)${NC}"
 
-# Create necessary directories
-mkdir -p "$MARKDOWN_DIR"
-mkdir -p "$TEMP_DIR"
+# Create directories
+mkdir -p "${MARKDOWN_DIR}"
+mkdir -p "${TEMP_DIR}"
 
-echo ""
-echo "Converting LaTeX slides to Markdown..."
-echo "========================================"
-
-# Counter for slides
-slide_count=0
-successful=0
-
-# First, combine all slide content into a single LaTeX file for processing
-COMBINED_TEX="${TEMP_DIR}/combined.tex"
-
-# Create a minimal LaTeX document structure
-cat > "$COMBINED_TEX" << 'EOF'
-\documentclass{beamer}
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-
-\title{Business Plan Presentation}
-\begin{document}
-
-EOF
-
-# Append all slide content
-for slide_file in "$LATEX_DIR"/content/slide*.tex; do
-    if [ -f "$slide_file" ]; then
-        # Extract just the frame content
-        sed '/^%/d' "$slide_file" >> "$COMBINED_TEX"
-        echo "" >> "$COMBINED_TEX"
+# ==================================================================
+# Function 1: Get total number of slides (keeps 00-99 index format)
+# ==================================================================
+get_total_slides() {
+  local count=0
+  shopt -s nullglob
+  for slide_file in "${LATEX_DIR}"/content/slide[0-9][0-9]-*.tex; do
+    if [ -f "${slide_file}" ]; then
+      count=$((count + 1))
     fi
-done
+  done
+  shopt -u nullglob
+  echo "${count}"
+}
 
-echo '\end{document}' >> "$COMBINED_TEX"
+# ==================================================================
+# Function 2: Extract slide number and $slideTitle from filename
+# e.g. slide01-title.tex → 01:title
+# ==================================================================
+extract_slide_info() {
+  local slide_file="${1}"
+  local filename
+  filename="$(basename "${slide_file}" .tex)"
+  local slide_num="00"
+  local slide_title="Untitled"
 
-# Convert each individual slide using Pandoc
-for slide_file in "$LATEX_DIR"/content/slide*.tex; do
-    if [ -f "$slide_file" ]; then
-        slide_count=$((slide_count + 1))
+  if [[ "${filename}" =~ ^slide([0-9]{2})-(.+)$ ]]; then
+    slide_num="${BASH_REMATCH[1]}"
+    slide_title="${BASH_REMATCH[2]}"
+  elif [[ "${filename}" =~ ^slide([0-9]{2})$ ]]; then
+    slide_num="${BASH_REMATCH[1]}"
+    slide_title="Slide ${slide_num}"
+  fi
+  echo "${slide_num}:${slide_title}"
+}
 
-        # Extract slide number and name from filename
-        filename=$(basename "$slide_file" .tex)
-        slide_num=$(echo "$filename" | sed 's/slide*//')
-
-        # Create output filename (zero-padded)
-        output_file=$(printf "%s/slide_%02d.md" "$MARKDOWN_DIR" "$slide_num")
-
-        # Convert LaTeX to Markdown
-        if pandoc \
-            --from latex \
-            --to markdown \
-            --standalone \
-            --output "$output_file" \
-            "$slide_file" 2>/dev/null; then
-
-            # Clean up the markdown output
-            # Remove LaTeX-specific commands that Pandoc might leave
-            sed -i.bak '
-                /^\\begin{frame}/d
-                /^\\end{frame}/d
-                /^\\framesubtitle/d
-                /^%.*$/d
-                /^\\begin{tikz/,/^\\end{tikz/c\
-[Chart/Diagram - See LaTeX source]
-                /^\\begin{columns}/d
-                /^\\end{columns}/d
-                /^\\column{/d
-                /^\\begin{block}/d
-                /^\\end{block}/d
-            ' "$output_file"
-
-            # Remove backup file
-            rm -f "${output_file}.bak"
-
-            echo -e "${GREEN}✓ Converted${NC} $filename → $output_file"
-            successful=$((successful + 1))
-        else
-            echo -e "${RED}✗ Failed${NC} to convert $filename"
-        fi
+# ==================================================================
+# Helper: Return sorted list "num:title:file" (handles any 1-99 order)
+# ==================================================================
+get_sorted_slide_list() {
+  local temp_list=()
+  shopt -s nullglob
+  for slide_file in "${LATEX_DIR}"/content/slide[0-9][0-9]-*.tex; do
+    if [ -f "${slide_file}" ]; then
+      local info
+      info="$(extract_slide_info "${slide_file}")"
+      local num="${info%%:*}"
+      local title="${info#*:}"
+      temp_list+=("${num}:${title}:${slide_file}")
     fi
-done
+  done
+  shopt -u nullglob
+  printf '%s\n' "${temp_list[@]}" | sort -t: -k1,1n
+}
 
-echo ""
-echo "========================================"
-echo -e "${GREEN}Conversion Summary:${NC}"
-echo "Total slides found: $slide_count"
-echo "Successfully converted: $successful"
-echo "Output directory: $MARKDOWN_DIR"
-echo ""
+# ==================================================================
+# Function 3: Create index using slide01.md + $slideTitle
+# ==================================================================
+create_slide_index() {
+  local index_file="${1}"
+  cat > "${index_file}" << EOF
+# ${PROJECT_TITLE} - Markdown Index
 
-# Create an index file
-INDEX_FILE="${MARKDOWN_DIR}/_index.md"
-cat > "$INDEX_FILE" << 'EOF'
-# Business Plan Presentation - Markdown Index
-
-This directory contains Markdown versions of the LaTeX Beamer business plan presentation slides.
+This directory contains Markdown versions of the LaTeX Beamer ${PROJECT_TITLE} slides.
 
 ## Slide List
 
 EOF
 
-for i in $(seq 1 $successful); do
-    slide_file=$(printf "${MARKDOWN_DIR}/slide_%02d.md" "$i")
-    if [ -f "$slide_file" ]; then
-        # Extract title from the markdown file
-        title=$(head -n 5 "$slide_file" | grep "^#" | head -1 | sed 's/^# //')
-        echo "- [Slide $i: $title]($slide_file)" >> "$INDEX_FILE"
+  local sorted_slides
+  sorted_slides="$(get_sorted_slide_list)"
+  while IFS= read -r line; do
+    if [ -n "${line}" ]; then
+      IFS=: read -r num title _ <<< "${line}"
+      echo "- [Slide ${num}: ${title}](slide${num}.md)" >> "${index_file}"
     fi
-done
+  done <<< "${sorted_slides}"
+}
 
-echo -e "${GREEN}✓ Created index file: $INDEX_FILE${NC}"
-
-# Create metadata JSON for easy access
-METADATA_FILE="${MARKDOWN_DIR}/_metadata.json"
-cat > "$METADATA_FILE" << EOF
+# ==================================================================
+# Function 4: Create metadata JSON (NEW in 2.0.1 - all "local" now inside function)
+# ==================================================================
+create_metadata_json() {
+  local metadata_file="${1}"
+  cat > "${metadata_file}" << EOF
 {
-  "title": "Business Plan Presentation",
-  "total_slides": $successful,
+  "title": "${PROJECT_TITLE}",
+  "total_slides": ${successful},
   "format": "markdown",
   "converted_from": "LaTeX Beamer",
   "conversion_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "slides": [
 EOF
 
-for i in $(seq 1 $successful); do
-    slide_file=$(printf "slide_%02d.md" "$i")
-    comma=$([ $i -lt $successful ] && echo "," || echo "")
-    cat >> "$METADATA_FILE" << EOF
+  local first=true
+  while IFS= read -r line; do
+    if [ -n "${line}" ]; then
+      if [ "${first}" = true ]; then
+        first=false
+      else
+        echo "    ," >> "${metadata_file}"
+      fi
+      IFS=: read -r slide_num slide_title slide_file <<< "${line}"
+      local md_filename="slide${slide_num}.md"
+      local num_int=$((10#${slide_num}))
+      cat >> "${metadata_file}" << EOF
     {
-      "number": $i,
-      "filename": "$slide_file",
-      "path": "slides/$slide_file"
-    }$comma
+      "number": ${num_int},
+      "title": "${slide_title}",
+      "filename": "${md_filename}",
+      "path": "slides/${md_filename}"
+    }
 EOF
-done
+    fi
+  done <<< "${sorted_slides}"
 
-cat >> "$METADATA_FILE" << EOF
+  cat >> "${metadata_file}" << EOF
   ]
 }
 EOF
+}
 
-echo -e "${GREEN}✓ Created metadata file: $METADATA_FILE${NC}"
+echo ""
+echo "Converting LaTeX slides to Markdown..."
+echo "========================================"
 
-# Cleanup temporary directory
-#rm -rf "$TEMP_DIR"
+# Process every slide (sorted by number)
+sorted_slides="$(get_sorted_slide_list)"
+slide_count=0
+successful=0
+
+while IFS= read -r line; do
+  if [ -n "${line}" ]; then
+    slide_count=$((slide_count + 1))
+    IFS=: read -r slide_num slide_title slide_file <<< "${line}"
+
+    # Output filename (zero-padded, no underscore)
+    output_file="$(printf "%s/slide%02d.md" "${MARKDOWN_DIR}" "${slide_num}")"
+
+    if pandoc \
+      --from latex \
+      --to markdown \
+      --standalone \
+      --output "${output_file}" \
+      "${slide_file}" 2>/dev/null; then
+
+      # Clean Pandoc output
+      sed -i.bak '
+        /^\\begin{frame}/d
+        /^\\end{frame}/d
+        /^\\framesubtitle/d
+        /^%.*$/d
+        /^\\begin{tikz/,/^\\end{tikz}/c\
+[Chart/Diagram - See LaTeX source]
+        /^\\begin{columns}/d
+        /^\\end{columns}/d
+        /^\\column{/d
+        /^\\begin{block}/d
+        /^\\end{block}/d
+      ' "${output_file}"
+
+      rm -f "${output_file}.bak"
+
+      echo -e "${GREEN}✓ Converted${NC} $(basename "${slide_file}" .tex) → ${output_file} (Title: ${slide_title})"
+      successful=$((successful + 1))
+    else
+      echo -e "${RED}✗ Failed${NC} to convert $(basename "${slide_file}" .tex)"
+    fi
+  fi
+done <<< "${sorted_slides}"
+
+echo ""
+echo "========================================"
+echo -e "${GREEN}Conversion Summary:${NC}"
+echo "Total slides found: ${slide_count}"
+echo "Successfully converted: ${successful}"
+echo "Output directory: ${MARKDOWN_DIR}"
+echo ""
+
+# Create index (uses slideTitle from filename)
+INDEX_FILE="${MARKDOWN_DIR}/_index.md"
+create_slide_index "${INDEX_FILE}"
+echo -e "${GREEN}✓ Created index file: ${INDEX_FILE}${NC}"
+
+# Create metadata JSON (now safe inside function)
+METADATA_FILE="${MARKDOWN_DIR}/_metadata.json"
+create_metadata_json "${METADATA_FILE}"
+echo -e "${GREEN}✓ Created metadata file: ${METADATA_FILE}${NC}"
+
+# Optional cleanup
+# rm -rf "${TEMP_DIR}"
 
 echo ""
 echo -e "${GREEN}✓ Conversion complete!${NC}"
 echo ""
 echo "Next steps:"
-echo "1. Review the converted markdown files in: $MARKDOWN_DIR"
-echo "2. Run: ./scripts/markdown-to-html.sh"
-echo "3. Access HTML slides in: $CONTENT_DIR/html"
+echo "1. Review markdown files in: ${MARKDOWN_DIR}"
+echo "2. Run: pnpm run your-next-script"
+echo "3. Open in VS Code Insiders on Linux Mint Mate"
 echo ""
