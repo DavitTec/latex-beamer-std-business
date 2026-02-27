@@ -1,8 +1,8 @@
 #!/bin/bash
 # scripts/latex-to-markdown.sh
-# Version: 2.0.1
+# Version: 2.0.2
 # Description: Converts LaTeX Beamer presentation slides to Markdown using Pandoc.
-#              Now fully modular with functions. Fixed "local" declarations (must be inside functions).
+#              Fixed printf octal bug on slide08+ (08 treated as octal). Now uses direct string construction.
 # Usage: pnpm run tex2md
 
 set -e
@@ -76,7 +76,7 @@ get_total_slides() {
 
 # ==================================================================
 # Function 2: Extract slide number and $slideTitle from filename
-# e.g. slide01-title.tex → 01:title
+# e.g. slide08-product-overview.tex → 08:product-overview
 # ==================================================================
 extract_slide_info() {
   local slide_file="${1}"
@@ -139,7 +139,7 @@ EOF
 }
 
 # ==================================================================
-# Function 4: Create metadata JSON (NEW in 2.0.1 - all "local" now inside function)
+# Function 4: Create metadata JSON
 # ==================================================================
 create_metadata_json() {
   local metadata_file="${1}"
@@ -195,8 +195,8 @@ while IFS= read -r line; do
     slide_count=$((slide_count + 1))
     IFS=: read -r slide_num slide_title slide_file <<< "${line}"
 
-    # Output filename (zero-padded, no underscore)
-    output_file="$(printf "%s/slide%02d.md" "${MARKDOWN_DIR}" "${slide_num}")"
+    # Output filename (already zero-padded string, no printf needed)
+    output_file="${MARKDOWN_DIR}/slide${slide_num}.md"
 
     if pandoc \
       --from latex \
