@@ -1,0 +1,90 @@
+% Main LaTeX Beamer Business Plan Presentation
+\documentclass[12pt]{beamer}
+\usepackage[size=a4,orientation=landscape,scale=3]{beamerposter}
+
+% Font Size Adjustments
+\setbeamerfont{title}{size=\Large}
+\setbeamerfont{subtitle}{size=\large}
+\setbeamerfont{frametitle}{size=\large}
+\setbeamerfont{normal text}{size=\small}
+
+% Theme and Color Settings
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamercolor{structure}{fg=blue!60!black}
+\setbeamercolor{palette primary}{bg=blue!70!black,fg=white}
+\setbeamercolor{palette secondary}{bg=blue!60!black,fg=white}
+\setbeamercolor{palette tertiary}{bg=blue!50!black,fg=white}
+
+% Packages
+\usepackage[british]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{pgf-pie}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{fontawesome5}
+\usepackage{hyperref}
+
+% Define path to content and metadata
+\newcommand*{\MyPath}{/opt/davit/development/latex-beamer-std-business/src/latex/latex-beamer-bizpres}%
+\newcommand*{\MyAssetsPath}{/opt/davit/development/latex-beamer-std-business/assets}%
+\newcommand*{\companylogo}{\MyAssetsPath/logo.png}
+
+% Custom Commands
+\newcommand{\highlight}[1]{\textcolor{blue!70!black}{\textbf{#1}}}
+\newcommand{\money}[1]{\textcolor{green!60!black}{\textbf{\$#1}}}
+
+% Remove navigation symbols
+\setbeamertemplate{navigation symbols}{}
+
+% Include metadata
+\input{\MyPath/metadata.tex}
+
+% % Footer with page numbers
+% \setbeamertemplate{footline}[frame number]
+
+% Custom Footer with Logo & Company Name
+\setbeamertemplate{footline}{
+  \hbox{%
+    \begin{beamercolorbox}[wd=1\paperwidth,ht=0.5cm,dp=0.25cm]{palette primary}
+      \hspace{0.3cm}
+      \includegraphics[height=1em]{\MyAssetsPath/logo-white.png}%
+      \hspace{0.3cm}
+      \textcolor{white}{\small\companyname}%
+      \hfill%
+      \insertframenumber/\inserttotalframenumber%
+      \hspace{0.3cm}
+    \end{beamercolorbox}%
+  }
+}
+
+% Document
+\begin{document}
+\input{\MyPath/content/slide-01.tex}
+\input{\MyPath/content/slide-02.tex}
+\input{\MyPath/content/slide-03.tex}
+\input{\MyPath/content/slide-04.tex}
+\input{\MyPath/content/slide-05.tex}
+\input{\MyPath/content/slide-06.tex}
+\input{\MyPath/content/slide-07.tex}
+\input{\MyPath/content/slide-08.tex}
+\input{\MyPath/content/slide-09.tex}
+\input{\MyPath/content/slide-10.tex}
+\input{\MyPath/content/slide-11.tex}
+\input{\MyPath/content/slide-12.tex}
+\input{\MyPath/content/slide-13.tex}
+\input{\MyPath/content/slide-14.tex}
+\input{\MyPath/content/slide-15.tex}
+\input{\MyPath/content/slide-16.tex}
+\input{\MyPath/content/slide-17.tex}
+\input{\MyPath/content/slide-18.tex}
+\input{\MyPath/content/slide-19.tex}
+\input{\MyPath/content/slide-20.tex}
+\input{\MyPath/content/slide-21.tex}
+
+\end{document}
