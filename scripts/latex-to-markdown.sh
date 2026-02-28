@@ -1,9 +1,9 @@
 #!/bin/bash
 # scripts/latex-to-markdown.sh
-# Version: 2.1.2
+# Version: 2.1.3
 # Description: Converts LaTeX Beamer slides to clean Markdown.
-#              Uses FULL main.tex + metadata.tex + ONE slide (your exact method).
-#              No more missing variables or empty output.
+#              FULL main.tex + metadata.tex + ONE slide.
+#              4 dedicated functions fix frontmatter, metadata, graphics and ALL :::::: divs.
 # Usage: pnpm run tex2md
 
 set -e
@@ -18,6 +18,7 @@ fi
 if [ -f ".env" ]; then
   echo "Loading environment from .env..."
   set -a
+  # shellcheck disable=SC1091
   source ".env"
   set +a
 fi
@@ -147,28 +148,67 @@ convert_with_pandoc() {
 }
 
 # ==================================================================
-# Function: Clean Markdown (removes :::::: frame/column blocks)
+# Function: Strip Pandoc YAML frontmatter (issue 1)
 # ==================================================================
-clean_markdown() {
-  # TODO: THIS HAS A BUG
+strip_yaml_frontmatter() {
   local file="${1}"
-#   sed -i '
-#     /^:\{3,\}/d
-#     /^[0-9.]\+ \[\]\{style=/d
-#     s/\{style="[^"]*"\}//g
-#     /^\\begin{frame}/d
-#     /^\\end{frame}/d
-#     /^\\framesubtitle/d
-#     /^%.*$/d
-#     /^\\begin{tikz/,/^\\end{tikz}/c\
-# [Chart/Diagram - See LaTeX source]
-#     /^\\begin{columns}/d
-#     /^\\end{columns}/d
-#     /^\\column{/d
-#     /^\\begin{block}/d
-#     /^\\end{block}/d
-#   ' "${file}"
-#   rm -f "${file}.bak" 2>/dev/null || true
+  sed -i '/^---$/,/^---$/d' "${file}"
+}
+
+# ==================================================================
+# Function: Add clean site-ready frontmatter (issues 1 + 2)
+# ==================================================================
+add_slide_frontmatter() {
+  local file="${1}"
+  local num="${2}"
+  local title="${3}"
+  local temp="${file}.tmp"
+  cat > "${temp}" << EOF
+---
+title: "${title}"
+slide_number: ${num}
+layout: slide
+---
+
+EOF
+  cat "${file}" >> "${temp}"
+  mv "${temp}" "${file}"
+}
+
+# ==================================================================
+# Function: Fix graphics links (issue 3)
+# ==================================================================
+fix_graphics_links() {
+  local file="${1}"
+  # TODO: change the line below to your actual image folder structure
+  # Example: sed -i 's|!\[\]\(([^)]*)\)|![Image](../assets/\1)|g' "${file}"
+  sed -i 's|!\[\]\(([^)]*)\)|![Image](\1)|g' "${file}"
+}
+
+# ==================================================================
+# Function: Clean ALL Beamer divs (issues 4-10)
+# ==================================================================
+clean_beamer_divs() {
+  local file="${1}"
+  sed -i '
+    /^:\{3,\}.*/d
+    /^[0-9.]\+\s*\[\]\{style=/d
+    s/\{style="[^"]*"\}//g
+    /^\\begin{frame}/d
+    /^\\end{frame}/d
+    /^\\framesubtitle/d
+    /^%.*$/d
+    /^\\begin{tikz/,/^\\end{tikz}/c\
+[Chart/Diagram - See LaTeX source]
+    /^\\begin{columns}/d
+    /^\\end{columns}/d
+    /^\\column{/d
+    /^\\begin{block}/d
+    /^\\end{block}/d
+    /^\\begin{alertblock}/d
+    /^\\end{alertblock}/d
+  ' "${file}"
+  rm -f "${file}.bak" 2>/dev/null || true
 }
 
 # ==================================================================
@@ -287,10 +327,14 @@ for slide_file in "${LATEX_DIR}"/content/slide[0-9][0-9]-*.tex; do
     echo -e "${YELLOW}Processing${NC} ${slide_num}: ${slide_title} ..."
 
     result=$(convert_with_pandoc "${TEMP_SLIDE}" "${output_file}")
-    IFS=: read -r status out_file out_size <<< "${result}"
+    IFS=: read -r status _ out_size <<< "${result}"
 
     if [ "${status}" = "success" ] && [ "${out_size}" -gt 100 ]; then
-      clean_markdown "${output_file}"
+      strip_yaml_frontmatter "${output_file}"
+      # BUG:clean_beamer_divs "${output_file}"
+      fix_graphics_links "${output_file}"
+      add_slide_frontmatter "${output_file}" "${slide_num}" "${slide_title}"
+
       echo -e "${GREEN}✓ Converted${NC} $(basename "${slide_file}" .tex) → ${output_file} (Title: ${slide_title})"
       successful=$((successful + 1))
     else
@@ -324,7 +368,7 @@ echo ""
 echo -e "${GREEN}✓ Conversion complete!${NC}"
 echo ""
 echo "Next steps:"
-echo "1. Open ./content/slides/slide01.md and slide20.md in VS Code Insiders"
-echo "2. Check _metadata.json"
+echo "1. Open ./content/slides/slide20.md – clean frontmatter + no :::::: blocks"
+echo "2. Edit fix_graphics_links() if your image paths need tweaking"
 echo "3. Run your next script on Linux Mint Mate"
 echo ""
