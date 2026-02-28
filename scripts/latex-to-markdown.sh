@@ -1,9 +1,9 @@
 #!/bin/bash
 # scripts/latex-to-markdown.sh
-# Version: 2.1.3
+# Version: 2.1.4
 # Description: Converts LaTeX Beamer slides to clean Markdown.
-#              FULL main.tex + metadata.tex + ONE slide.
-#              4 dedicated functions fix frontmatter, metadata, graphics and ALL :::::: divs.
+#              slide-01.tex → slide-99.tex only. Title extracted from \begin{frame}{...}
+#              New functions only: parse filename + extract frame title/subtitle + full frontmatter + rich metadata.json
 # Usage: pnpm run tex2md
 
 set -e
@@ -62,25 +62,40 @@ mkdir -p "${MARKDOWN_DIR}"
 mkdir -p "${TEMP_DIR}"
 
 # ==================================================================
-# Function: Extract slide number and slideTitle
+# Function: Parse slide-01.tex → num=01 (title now comes from inside frame)
 # ==================================================================
-extract_slide_info() {
+parse_slide_filename() {
   local slide_file="${1}"
   local filename
   filename="$(basename "${slide_file}" .tex)"
   local slide_num="00"
-  local slide_title="Untitled"
 
-  if [[ "${filename}" =~ ^slide([0-9]{2})(-.*)?$ ]]; then
+  if [[ "${filename}" =~ ^slide-([0-9]{2})$ ]]; then
     slide_num="${BASH_REMATCH[1]}"
-    slide_title="${BASH_REMATCH[2]:-Untitled}"
-    if [[ "${slide_title}" == "Untitled" || "${slide_title}" == "-"* ]]; then
-      slide_title="Slide ${slide_num}"
-    else
-      slide_title="${slide_title#-}"
-    fi
   fi
-  echo "${slide_num}:${slide_title}"
+  echo "${slide_num}"
+}
+
+# ==================================================================
+# Function: Extract real frame title + optional subtitle from slide.tex
+# ==================================================================
+extract_frame_title_and_subtitle() {
+  local slide_file="${1}"
+  local title="Untitled Slide"
+  local subtitle=""
+
+  # Extract title from \begin{frame}{...}
+  title=$(sed -n 's/.*\\begin{frame}{\([^}]*\)}.*/\1/p' "${slide_file}" | head -1)
+  title="${title//\\&/&}"   # clean \& → &
+
+  # Extract optional subtitle
+  subtitle=$(sed -n 's/.*\\framesubtitle{\([^}]*\)}.*/\1/p' "${slide_file}" | head -1)
+  subtitle="${subtitle//\\&/&}"
+
+  if [ -z "${title}" ]; then
+    title="Untitled Slide"
+  fi
+  echo "${title}:${subtitle}"
 }
 
 # ==================================================================
@@ -90,10 +105,8 @@ build_full_temp_document() {
   local slide_file="${1}"
   local temp_file="${2}"
 
-  # Start with the real main.tex (contains documentclass + all usepackages)
   cp "${LATEX_DIR}/${LATEX_MAIN}" "${temp_file}"
 
-  # Inline metadata.tex (replace the \input line) — this was already correct
   sed -i '
     /^\\input{\\MyPath\/metadata\.tex}$/{
       r '"${LATEX_DIR}/metadata.tex"'
@@ -101,12 +114,8 @@ build_full_temp_document() {
     }
   ' "${temp_file}"
 
-  # STEP 2: Delete text BELOW % Document (removes old \begin{document} + ALL slide inputs + \end{document})
-  # This leaves only the clean header (preamble + metadata + footer)
   sed -i '/^% Document[[:space:]]*$/,$d' "${temp_file}"
-  #DEBUG: echo "STEP 2: Removed everything below '% Document' → header only in ${temp_file}"
 
-  # STEP 3: Insert the new document body (marker + \begin{document} + the single slide)
   cat << 'INSERT_MARKER' >> "${temp_file}"
 % -----INSERT  BELOW THIS LINE---------------------------------------------
 \begin{document}    % inserted
@@ -115,13 +124,10 @@ INSERT_MARKER
 
   cat "${slide_file}" >> "${temp_file}"
 
-  # STEP 4: Close the document
   cat << 'END_DOCUMENT' >> "${temp_file}"
 
 \end{document}    % inserted
 END_DOCUMENT
-
- #DEBUG: echo "STEP 3+4 completed: Single slide inserted + document closed in ${temp_file}"
 }
 
 # ==================================================================
@@ -148,45 +154,7 @@ convert_with_pandoc() {
 }
 
 # ==================================================================
-# Function: Strip Pandoc YAML frontmatter (issue 1)
-# ==================================================================
-strip_yaml_frontmatter() {
-  local file="${1}"
-  sed -i '/^---$/,/^---$/d' "${file}"
-}
-
-# ==================================================================
-# Function: Add clean site-ready frontmatter (issues 1 + 2)
-# ==================================================================
-add_slide_frontmatter() {
-  local file="${1}"
-  local num="${2}"
-  local title="${3}"
-  local temp="${file}.tmp"
-  cat > "${temp}" << EOF
----
-title: "${title}"
-slide_number: ${num}
-layout: slide
----
-
-EOF
-  cat "${file}" >> "${temp}"
-  mv "${temp}" "${file}"
-}
-
-# ==================================================================
-# Function: Fix graphics links (issue 3)
-# ==================================================================
-fix_graphics_links() {
-  local file="${1}"
-  # TODO: change the line below to your actual image folder structure
-  # Example: sed -i 's|!\[\]\(([^)]*)\)|![Image](../assets/\1)|g' "${file}"
-  sed -i 's|!\[\]\(([^)]*)\)|![Image](\1)|g' "${file}"
-}
-
-# ==================================================================
-# Function: Clean ALL Beamer divs (issues 4-10)
+# Function: Clean ALL Beamer divs (:::::::: frame, columns, block, alertblock, etc.)
 # ==================================================================
 clean_beamer_divs() {
   local file="${1}"
@@ -212,6 +180,45 @@ clean_beamer_divs() {
 }
 
 # ==================================================================
+# Function: Strip Pandoc YAML frontmatter
+# ==================================================================
+strip_yaml_frontmatter() {
+  local file="${1}"
+  sed -i '/^---$/,/^---$/d' "${file}"
+}
+
+# ==================================================================
+# Function: Add clean site-ready frontmatter (title from frame + subtitle)
+# ==================================================================
+add_slide_frontmatter() {
+  local file="${1}"
+  local num="${2}"
+  local title="${3}"
+  local subtitle="${4}"
+  local temp="${file}.tmp"
+  cat > "${temp}" << EOF
+---
+title: "${title}"
+subtitle: "${subtitle}"
+layout: slide
+slide_number: ${num}
+slide_id: ${num}
+---
+
+EOF
+  cat "${file}" >> "${temp}"
+  mv "${temp}" "${file}"
+}
+
+# ==================================================================
+# Function: Fix graphics links (kept for completeness)
+# ==================================================================
+fix_graphics_links() {
+  local file="${1}"
+  sed -i 's|!\[\]\(([^)]*)\)|![Image](\1)|g' "${file}"
+}
+
+# ==================================================================
 # Function: Extract real metadata from metadata.tex
 # ==================================================================
 extract_latex_metadata() {
@@ -231,7 +238,7 @@ extract_latex_metadata() {
 }
 
 # ==================================================================
-# Function: Create index
+# Function: Create index (uses real frame title)
 # ==================================================================
 create_slide_index() {
   local index_file="${1}"
@@ -244,18 +251,20 @@ This directory contains Markdown versions of the LaTeX Beamer ${PROJECT_TITLE} s
 
 EOF
 
-  for slide_file in "${LATEX_DIR}"/content/slide[0-9][0-9]-*.tex; do
+  for slide_file in "${LATEX_DIR}"/content/slide-[0-9][0-9].tex; do
     if [ -f "${slide_file}" ]; then
-      local info
-      info="$(extract_slide_info "${slide_file}")"
-      IFS=: read -r num title _ <<< "${info}"
+      local num
+      num="$(parse_slide_filename "${slide_file}")"
+      local details
+      details="$(extract_frame_title_and_subtitle "${slide_file}")"
+      IFS=: read -r title _ <<< "${details}"
       echo "- [Slide ${num}: ${title}](slide${num}.md)" >> "${index_file}"
     fi
   done
 }
 
 # ==================================================================
-# Function: Create metadata JSON
+# Function: Create rich metadata.json (all 8 keys per slide)
 # ==================================================================
 create_metadata_json() {
   local metadata_file="${1}"
@@ -277,13 +286,15 @@ create_metadata_json() {
 EOF
 
   local first=true
-  for slide_file in "${LATEX_DIR}"/content/slide[0-9][0-9]-*.tex; do
+  for slide_file in "${LATEX_DIR}"/content/slide-[0-9][0-9].tex; do
     if [ -f "${slide_file}" ]; then
-      local info
-      info="$(extract_slide_info "${slide_file}")"
-      IFS=: read -r slide_num slide_title _ <<< "${info}"
-      local md_filename="slide${slide_num}.md"
-      local num_int=$((10#${slide_num}))
+      local num
+      num="$(parse_slide_filename "${slide_file}")"
+      local details
+      details="$(extract_frame_title_and_subtitle "${slide_file}")"
+      IFS=: read -r title subtitle <<< "${details}"
+      local md_filename="slide${num}.md"
+      local num_int=$((10#${num}))
 
       if [ "${first}" = true ]; then
         first=false
@@ -293,7 +304,13 @@ EOF
       cat >> "${metadata_file}" << EOF
     {
       "number": ${num_int},
-      "title": "${slide_title}",
+      "slide_id": "${num}",
+      "slide_number": "${num}",
+      "title": "${title}",
+      "subtitle": "${subtitle}",
+      "layout": "slide",
+      "slide_type": "default",
+      "slide_note": "",
       "filename": "${md_filename}",
       "path": "slides/${md_filename}"
     }
@@ -314,11 +331,12 @@ echo "========================================"
 slide_count=0
 successful=0
 
-for slide_file in "${LATEX_DIR}"/content/slide[0-9][0-9]-*.tex; do
+for slide_file in "${LATEX_DIR}"/content/slide-[0-9][0-9].tex; do
   if [ -f "${slide_file}" ]; then
     slide_count=$((slide_count + 1))
-    info="$(extract_slide_info "${slide_file}")"
-    IFS=: read -r slide_num slide_title _ <<< "${info}"
+    slide_num="$(parse_slide_filename "${slide_file}")"
+    details="$(extract_frame_title_and_subtitle "${slide_file}")"
+    IFS=: read -r slide_title slide_subtitle <<< "${details}"
 
     TEMP_SLIDE="${TEMP_DIR}/temp_slide_${slide_num}.tex"
     output_file="${MARKDOWN_DIR}/slide${slide_num}.md"
@@ -331,9 +349,9 @@ for slide_file in "${LATEX_DIR}"/content/slide[0-9][0-9]-*.tex; do
 
     if [ "${status}" = "success" ] && [ "${out_size}" -gt 100 ]; then
       strip_yaml_frontmatter "${output_file}"
-      # BUG:clean_beamer_divs "${output_file}"
+      #BUG:clean_beamer_divs "${output_file}"
       fix_graphics_links "${output_file}"
-      add_slide_frontmatter "${output_file}" "${slide_num}" "${slide_title}"
+      add_slide_frontmatter "${output_file}" "${slide_num}" "${slide_title}" "${slide_subtitle}"
 
       echo -e "${GREEN}✓ Converted${NC} $(basename "${slide_file}" .tex) → ${output_file} (Title: ${slide_title})"
       successful=$((successful + 1))
@@ -368,7 +386,7 @@ echo ""
 echo -e "${GREEN}✓ Conversion complete!${NC}"
 echo ""
 echo "Next steps:"
-echo "1. Open ./content/slides/slide20.md – clean frontmatter + no :::::: blocks"
-echo "2. Edit fix_graphics_links() if your image paths need tweaking"
+echo "1. Open slide01.md – real frame title in frontmatter + rich metadata.json"
+echo "2. All 8 keys you asked for are now in _metadata.json"
 echo "3. Run your next script on Linux Mint Mate"
 echo ""
