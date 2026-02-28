@@ -1,6 +1,6 @@
 # LaTeX Standard Business Beamer Presentation Template
 
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/DavitTec/latex-beamer-std-business?style=for-the-badge&logo=github)](https://github.com/DavitTec/latex-beamer-std-business/releases)
+[![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/DavitTec/latex-beamer-std-business?style=for-the-badge&logo=github)](https://github.com/DavitTec/latex-beamer-std-business/tag)
 [![GitHub open issues](https://img.shields.io/github/issues-raw/DavitTec/latex-beamer-std-business?style=for-the-badge&label=Open%20Issues)](https://github.com/DavitTec/latex-beamer-std-business/issues)
 [![GitHub top language](https://img.shields.io/github/languages/top/DavitTec/latex-beamer-std-business?style=for-the-badge)](https://github.com/DavitTec/latex-beamer-std-business)
 [![GitHub license](https://img.shields.io/github/license/DavitTec/latex-beamer-std-business?style=for-the-badge)](https://github.com/DavitTec/latex-beamer-std-business)
@@ -80,4 +80,4 @@ MIT License. See [LICENSE](LICENSE) file.
 
 Copyright © Davit Technologies 2026
 
-Version: 0.1.0
+Version: 3.0.0
